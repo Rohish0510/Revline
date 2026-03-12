@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevLine — Strength. Community. Purpose.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <style>
+    :root {
+      --bg-base: #0c0b1d;
+      --bg-surface: #111021;
+      --bg-elevated: #17162a;
+      --bg-card: rgba(255,255,255,0.025);
+      --text-primary: #e8e6e3;
+      --text-secondary: #9e9a94;
+      --text-muted: rgba(232,230,227,0.35);
+      --accent: #3de8c8;
+      --accent-2: #a78bfa;
+      --accent-dim: rgba(61,232,200,0.08);
+      --accent-glow: rgba(61,232,200,0.18);
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --border-accent: rgba(61,232,200,0.2);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity:0.04; pointer-events:none; z-index:9999;
+    }
+    /* Cursor */
+    #cursor {
+      position:fixed; width:8px; height:8px;
+      background:var(--accent); border-radius:50%;
+      pointer-events:none; z-index:10000;
+      transform:translate(-50%,-50%);
+      transition:width .25s,height .25s;
+    }
+    #cursor-f {
+      position:fixed; width:36px; height:36px;
+      border:1px solid rgba(61,232,200,.4); border-radius:50%;
+      pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%);
+      transition:width .3s,height .3s,opacity .3s;
+    }
+    body.ch #cursor { width:14px; height:14px; }
+    body.ch #cursor-f { width:52px; height:52px; opacity:.5; }
+    /* Nav */
+    #nav {
+      position:fixed; top:24px; left:50%; transform:translateX(-50%);
+      z-index:1000; display:flex; align-items:center;
+      background:rgba(12,11,29,.78); backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      border:1px solid var(--border); border-radius:999px;
+      padding:10px 20px;
+      transition:transform .3s ease,opacity .3s ease;
+    }
+    #nav.hide { transform:translateX(-50%) translateY(-90px); opacity:0; }
+    .nav-logo {
+      font-family:'Syne',sans-serif; font-weight:800; font-size:16px;
+      letter-spacing:.08em; color:var(--text-primary);
+      text-decoration:none; margin-right:24px;
+    }
+    .nav-logo em { color:var(--accent); font-style:normal; }
+    .nav-links { display:flex; align-items:center; gap:2px; }
+    .nav-links a {
+      color:var(--text-secondary); text-decoration:none;
+      font-size:13px; padding:6px 14px; border-radius:999px;
+      transition:color .2s,background .2s;
+    }
+    .nav-links a:hover { color:var(--text-primary); background:rgba(255,255,255,.06); }
+    .nav-cta {
+      background:var(--accent) !important; color:#0c0b1d !important;
+      font-weight:600 !important; margin-left:8px;
+      transition:opacity .2s !important;
+    }
+    .nav-cta:hover { opacity:.82 !important; }
+    .wrap { max-width:1280px; margin:0 auto; padding:0 48px; }
+    section { position:relative; overflow:hidden; }
+    h1,h2,h3,h4 { font-family:'Syne',sans-serif; }
+    .d-xl { font-size:clamp(64px,12vw,156px); font-weight:800; line-height:.9; letter-spacing:-.04em; }
+    .d-lg { font-size:clamp(36px,5.5vw,76px); font-weight:800; line-height:1.0; letter-spacing:-.03em; }
+    .d-md { font-size:clamp(26px,3.5vw,48px); font-weight:700; line-height:1.1; letter-spacing:-.02em; }
+    .accent { color:var(--accent); }
+    /* Buttons */
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:14px 28px; border-radius:999px;
+      font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500;
+      cursor:none; transition:all .3s ease; text-decoration:none; border:none;
+    }
+    .btn-p { background:var(--accent); color:#0c0b1d; font-weight:600; }
+    .btn-p:hover { box-shadow:0 0 48px var(--accent-glow); transform:translateY(-2px); }
+    .btn-o { border:1px solid var(--border-hover); color:var(--text-primary); background:transparent; }
+    .btn-o:hover { border-color:var(--accent); color:var(--accent); transform:translateY(-2px); }
+    /* Cards */
+    .card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:20px; backdrop-filter:blur(8px);
+      transition:border-color .3s,transform .3s,box-shadow .3s;
+    }
+    .card:hover { border-color:rgba(61,232,200,.18); transform:translateY(-4px); box-shadow:0 24px 60px rgba(0,0,0,.45); }
+    /* Reveals */
+    .rv { opacity:0; transform:translateY(36px); transition:opacity .8s ease,transform .8s ease; }
+    .rv.on { opacity:1; transform:translateY(0); }
+    .rv-l { opacity:0; transform:translateX(-36px); transition:opacity .8s ease,transform .8s ease; }
+    .rv-l.on { opacity:1; transform:translateX(0); }
+    .rv-r { opacity:0; transform:translateX(36px); transition:opacity .8s ease,transform .8s ease; }
+    .rv-r.on { opacity:1; transform:translateX(0); }
+    .stg > * { opacity:0; transform:translateY(28px); transition:opacity .6s ease,transform .6s ease; }
+    .stg.on > *:nth-child(1){ opacity:1;transform:none;transition-delay:.00s; }
+    .stg.on > *:nth-child(2){ opacity:1;transform:none;transition-delay:.08s; }
+    .stg.on > *:nth-child(3){ opacity:1;transform:none;transition-delay:.16s; }
+    .stg.on > *:nth-child(4){ opacity:1;transform:none;transition-delay:.24s; }
+    .stg.on > *:nth-child(5){ opacity:1;transform:none;transition-delay:.32s; }
+    .stg.on > *:nth-child(6){ opacity:1;transform:none;transition-delay:.40s; }
+    .stg.on > *:nth-child(7){ opacity:1;transform:none;transition-delay:.48s; }
+    .stg.on > *:nth-child(8){ opacity:1;transform:none;transition-delay:.56s; }
+    .stg.on > *:nth-child(9){ opacity:1;transform:none;transition-delay:.64s; }
+    .stg.on > *:nth-child(10){ opacity:1;transform:none;transition-delay:.72s; }
+    /* Tag */
+    .tag {
+      display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+      border-radius:999px; font-size:11px; font-weight:500;
+      letter-spacing:.06em; text-transform:uppercase;
+      background:var(--accent-dim); color:var(--accent);
+      border:1px solid rgba(61,232,200,.15);
+    }
+    .tag-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pdot 2s ease-in-out infinite; }
+    @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+    /* Marquee */
+    .mq-wrap { overflow:hidden; white-space:nowrap; }
+    .mq-track { display:inline-flex; animation:mq 28s linear infinite; }
+    @keyframes mq { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    /* Hero */
+    #hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding-top:100px; padding-bottom:60px; }
+    .hero-grid {
+      position:absolute; inset:0;
+      background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+      background-size:72px 72px;
+      mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 75%);
+    }
+    .hero-glow { position:absolute; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(61,232,200,.07) 0%,transparent 68%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; animation:hglow 5s ease-in-out infinite; }
+    @keyframes hglow { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.7} 50%{transform:translate(-50%,-50%) scale(1.12);opacity:1} }
+    .rl-letters { display:flex; gap:.01em; justify-content:center; }
+    .rl-letter { display:inline-block; animation:lf 4s ease-in-out infinite; filter:blur(10px); opacity:0; }
+    @keyframes lf { 0%{filter:blur(10px);opacity:0} 18%{filter:blur(0);opacity:1} 75%{filter:blur(0);opacity:1} 92%{filter:blur(6px);opacity:.4} 100%{filter:blur(10px);opacity:0} }
+    .scroll-line { width:1px; height:48px; background:linear-gradient(to bottom,var(--accent),transparent); animation:sl 2.2s ease-in-out infinite; }
+    @keyframes sl { 0%{opacity:0;transform:scaleY(0);transform-origin:top} 45%{opacity:1;transform:scaleY(1);transform-origin:top} 90%{opacity:0;transform:scaleY(1);transform-origin:bottom} 100%{opacity:0;transform:scaleY(0);transform-origin:bottom} }
+    /* Crew */
+    .crew-card { position:relative; overflow:hidden; border-radius:16px; aspect-ratio:3/4; background:var(--bg-elevated); cursor:none; }
+    .crew-card img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease,filter .6s ease; filter:grayscale(25%) brightness(.9); }
+    .crew-card:hover img { transform:scale(1.07); filter:grayscale(0%) brightness(1); }
+    .crew-ov { position:absolute; inset:0; background:linear-gradient(to top,rgba(12,11,29,.92) 0%,rgba(12,11,29,.2) 55%,transparent 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:18px; transition:background .3s; }
+    .crew-card:hover .crew-ov { background:linear-gradient(to top,rgba(12,11,29,.96) 0%,rgba(12,11,29,.45) 60%,transparent 100%); }
+    .crew-name { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; color:var(--text-primary); transform:translateY(4px); transition:transform .3s,color .3s; }
+    .crew-card:hover .crew-name { transform:translateY(0); color:var(--accent); }
+    /* Accordion */
+    .acc-item { border-bottom:1px solid var(--border); }
+    .acc-btn { width:100%; text-align:left; background:none; border:none; color:var(--text-primary); font-family:'Syne',sans-serif; font-size:16px; font-weight:600; padding:22px 0; cursor:none; display:flex; align-items:center; justify-content:space-between; gap:16px; transition:color .2s; }
+    .acc-btn:hover { color:var(--accent); }
+    .acc-icon { width:26px; height:26px; border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform .35s,border-color .2s,color .2s; font-size:18px; line-height:1; color:var(--text-secondary); }
+    .acc-btn[aria-expanded="true"] .acc-icon { transform:rotate(45deg); border-color:var(--accent); color:var(--accent); }
+    .acc-body { overflow:hidden; max-height:0; transition:max-height .42s cubic-bezier(.4,0,.2,1); }
+    .acc-body.open { max-height:500px; }
+    .acc-inner { padding:0 0 22px; color:var(--text-secondary); font-size:14px; line-height:1.8; }
+    .acc-inner li { list-style:none; padding:2px 0; }
+    /* Events table */
+    .ev-table { width:100%; border-collapse:collapse; }
+    .ev-table th { text-align:left; padding:12px 20px; font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border); }
+    .ev-table td { padding:16px 20px; font-size:14px; color:var(--text-secondary); border-bottom:1px solid var(--border); transition:color .2s; }
+    .ev-table tr:hover td { color:var(--text-primary); }
+    .ev-table tr:last-child td { border-bottom:none; }
+    ::-webkit-scrollbar{ width:4px; }
+    ::-webkit-scrollbar-track{ background:var(--bg-base); }
+    ::-webkit-scrollbar-thumb{ background:var(--border-hover); border-radius:2px; }
+    /* Grids */
+    .g2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    .g5 { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+    @media(max-width:1024px){
+      .g4{ grid-template-columns:repeat(2,1fr); }
+      .g5{ grid-template-columns:repeat(3,1fr); }
+    }
+    @media(max-width:768px){
+      .wrap{ padding:0 20px; }
+      .g2,.g4,.g5{ grid-template-columns:repeat(2,1fr); }
+      .rules-row{ display:block !important; padding:36px 0 !important; }
+      .rules-num{ display:none !important; }
+      .about-grid{ grid-template-columns:1fr !important; }
+      .nav-links a:not(.nav-cta){ display:none; }
+      .cta-inner{ padding:48px 24px !important; }
+    }
+    @media(max-width:480px){
+      .g5{ grid-template-columns:repeat(2,1fr); }
+    }
+    .line-reveal { overflow:hidden; }
+    .line-reveal span { display:block; transform:translateY(110%); transition:transform .9s cubic-bezier(.16,1,.3,1); }
+    .line-reveal.on span { transform:translateY(0); }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-f"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">REV<em>LINE</em></a>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#events">Events</a>
+    <a href="#crew">Crew</a>
+    <a href="#terms">T&amp;C</a>
+    <a href="#contact" class="nav-cta">Join Us</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="wrap" style="position:relative;z-index:1;">
+    <div class="tag rv" style="margin:0 auto 36px;width:fit-content;">
+      <span class="tag-dot"></span>
+      Fitness Community &nbsp;·&nbsp; Est. 2020
+    </div>
+    <div class="d-xl rl-letters" id="rl" style="margin-bottom:28px;"></div>
+    <p class="rv" style="font-size:clamp(16px,2vw,20px);color:var(--text-secondary);max-width:540px;margin:0 auto 14px;line-height:1.55;letter-spacing:-.01em;">
+      The movement that unites fitness enthusiasts — one workout at a time.
+    </p>
+    <p class="rv" style="font-style:italic;color:var(--accent);font-size:14px;margin-bottom:52px;opacity:.9;">
+      "Consistency Builds Power, Community Builds Purpose."
+    </p>
+    <div class="rv" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:80px;">
+      <a href="#events" class="btn btn-p">
+        Upcoming Events
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#contact" class="btn btn-o">Join the Movement</a>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;opacity:.4;">
+      <span style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-secondary);">Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 0;background:rgba(255,255,255,.01);">
+  <div class="mq-wrap">
+    <div class="mq-track">
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);">
+        &nbsp;&nbsp;REVLINE&nbsp;&nbsp;·&nbsp;&nbsp;STRENGTH&nbsp;&nbsp;·&nbsp;&nbsp;COMMUNITY&nbsp;&nbsp;·&nbsp;&nbsp;CONSISTENCY&nbsp;&nbsp;·&nbsp;&nbsp;PURPOSE&nbsp;&nbsp;·&nbsp;&nbsp;MOVEMENT&nbsp;&nbsp;·&nbsp;&nbsp;GROWTH&nbsp;&nbsp;·&nbsp;&nbsp;TOGETHER&nbsp;&nbsp;·&nbsp;&nbsp;EVERY WEEKEND&nbsp;&nbsp;·&nbsp;&nbsp;ACCOUNTABILITY&nbsp;&nbsp;·&nbsp;&nbsp;REVLINE&nbsp;&nbsp;·&nbsp;&nbsp;STRENGTH&nbsp;&nbsp;·&nbsp;&nbsp;COMMUNITY&nbsp;&nbsp;·&nbsp;&nbsp;CONSISTENCY&nbsp;&nbsp;·&nbsp;&nbsp;PURPOSE&nbsp;&nbsp;·&nbsp;&nbsp;MOVEMENT&nbsp;&nbsp;·&nbsp;&nbsp;GROWTH&nbsp;&nbsp;·&nbsp;&nbsp;TOGETHER&nbsp;&nbsp;·&nbsp;&nbsp;EVERY WEEKEND&nbsp;&nbsp;·&nbsp;&nbsp;ACCOUNTABILITY&nbsp;&nbsp;·&nbsp;&nbsp;
+      </span>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);">
+        &nbsp;&nbsp;REVLINE&nbsp;&nbsp;·&nbsp;&nbsp;STRENGTH&nbsp;&nbsp;·&nbsp;&nbsp;COMMUNITY&nbsp;&nbsp;·&nbsp;&nbsp;CONSISTENCY&nbsp;&nbsp;·&nbsp;&nbsp;PURPOSE&nbsp;&nbsp;·&nbsp;&nbsp;MOVEMENT&nbsp;&nbsp;·&nbsp;&nbsp;GROWTH&nbsp;&nbsp;·&nbsp;&nbsp;TOGETHER&nbsp;&nbsp;·&nbsp;&nbsp;EVERY WEEKEND&nbsp;&nbsp;·&nbsp;&nbsp;ACCOUNTABILITY&nbsp;&nbsp;·&nbsp;&nbsp;REVLINE&nbsp;&nbsp;·&nbsp;&nbsp;STRENGTH&nbsp;&nbsp;·&nbsp;&nbsp;COMMUNITY&nbsp;&nbsp;·&nbsp;&nbsp;CONSISTENCY&nbsp;&nbsp;·&nbsp;&nbsp;PURPOSE&nbsp;&nbsp;·&nbsp;&nbsp;MOVEMENT&nbsp;&nbsp;·&nbsp;&nbsp;GROWTH&nbsp;&nbsp;·&nbsp;&nbsp;TOGETHER&nbsp;&nbsp;·&nbsp;&nbsp;EVERY WEEKEND&nbsp;&nbsp;·&nbsp;&nbsp;ACCOUNTABILITY&nbsp;&nbsp;·&nbsp;&nbsp;
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT / STATS -->
+<section id="about" style="padding:110px 0;">
+  <div class="wrap">
+    <div class="about-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;">
+      <div>
+        <div class="tag rv" style="margin-bottom:24px;">About RevLine</div>
+        <h2 class="d-lg rv" style="margin-bottom:28px;">
+          We were built for<br><span class="accent">more than solo</span><br>workouts.
+        </h2>
+        <p class="rv" style="color:var(--text-secondary);font-size:16px;line-height:1.75;margin-bottom:20px;max-width:440px;">
+          We wanted a space where people come together to train, grow, and support each other. A community built on consistency, strength, and shared energy.
+        </p>
+        <p class="rv" style="color:var(--text-secondary);font-size:16px;line-height:1.75;margin-bottom:40px;max-width:440px;">
+          We blend strength training, cardio, mobility, endurance, and more into a hybrid training lifestyle. Weekend group sessions. Weekday accountability. Long-term growth.
+        </p>
+        <a href="#contact" class="btn btn-p rv">
+          Join the Movement
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="stg" style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
+        <div class="card" style="padding:40px 32px;border-radius:20px 4px 4px 4px;">
+          <div style="font-family:'Syne',sans-serif;font-size:clamp(38px,4.5vw,58px);font-weight:800;color:var(--accent);line-height:1;margin-bottom:10px;" class="ctr" data-target="50" data-suffix="+">0+</div>
+          <div style="font-size:14px;color:var(--text-secondary);">Active Members</div>
+        </div>
+        <div class="card" style="padding:40px 32px;border-radius:4px 20px 4px 4px;">
+          <div style="font-family:'Syne',sans-serif;font-size:clamp(38px,4.5vw,58px);font-weight:800;color:var(--accent);line-height:1;margin-bottom:10px;" class="ctr" data-target="30" data-suffix="+">0+</div>
+          <div style="font-size:14px;color:var(--text-secondary);">Sessions Done</div>
+        </div>
+        <div class="card" style="padding:40px 32px;border-radius:4px 4px 4px 20px;">
+          <div style="font-family:'Syne',sans-serif;font-size:clamp(38px,4.5vw,58px);font-weight:800;color:var(--accent);line-height:1;margin-bottom:10px;" class="ctr" data-target="4" data-suffix="">0</div>
+          <div style="font-size:14px;color:var(--text-secondary);">Disciplines</div>
+        </div>
+        <div class="card" style="padding:40px 32px;border-radius:4px 4px 20px 4px;">
+          <div style="font-family:'Syne',sans-serif;font-size:clamp(38px,4.5vw,58px);font-weight:800;color:var(--accent);line-height:1;margin-bottom:10px;" class="ctr" data-target="2020" data-suffix="">2020</div>
+          <div style="font-size:14px;color:var(--text-secondary);">Founded</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE DO -->
+<section style="padding:110px 0;background:var(--bg-surface);">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;gap:40px;flex-wrap:wrap;">
+      <div>
+        <div class="tag rv" style="margin-bottom:16px;">What We Do</div>
+        <h2 class="d-md rv">A hybrid training lifestyle,<br>built for <span class="accent">everyone.</span></h2>
+      </div>
+      <p class="rv" style="color:var(--text-secondary);font-size:15px;line-height:1.75;max-width:340px;">
+        From weekend group sessions to weekday accountability — RevLine is built for consistency, fun, and long-term growth.
+      </p>
+    </div>
+    <div class="g4 stg">
+      <div class="card" style="padding:32px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-dim);border:1px solid var(--border-accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12"/></svg>
+        </div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Strength Training</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65;">Build raw power through progressive overload and compound movements.</p>
+      </div>
+      <div class="card" style="padding:32px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-dim);border:1px solid var(--border-accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Cardio</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65;">Push endurance limits with HIIT, trail runs, and high-energy circuits.</p>
+      </div>
+      <div class="card" style="padding:32px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-dim);border:1px solid var(--border-accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+        </div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Mobility</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65;">Improve range of motion, flexibility, and prevent injuries with guided work.</p>
+      </div>
+      <div class="card" style="padding:32px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-dim);border:1px solid var(--border-accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Community</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65;">Train with a crew that pushes you. Accountability, motivation, shared wins.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE ROLL -->
+<section style="padding:110px 0;">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:80px;">
+      <div class="line-reveal rv" style="margin-bottom:6px;">
+        <span class="d-lg">Just show up.</span>
+      </div>
+      <div class="line-reveal rv" style="transition-delay:.1s;">
+        <span class="d-lg accent">We'll handle the rest.</span>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card rv-l" style="padding:48px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:24px;right:24px;font-family:'Syne',sans-serif;font-size:96px;font-weight:800;color:rgba(61,232,200,.04);line-height:1;pointer-events:none;user-select:none;">01</div>
+        <div class="tag" style="margin-bottom:24px;">Every Weekend</div>
+        <h3 style="font-size:26px;font-weight:700;margin-bottom:14px;">Group Sessions</h3>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.75;">
+          Outdoor workouts, turf sessions, trail runs, gym sessions — we rotate locations to keep every session fresh. Expect to be challenged, surprised, and energised.
+        </p>
+      </div>
+      <div class="card rv-r" style="padding:48px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:24px;right:24px;font-family:'Syne',sans-serif;font-size:96px;font-weight:800;color:rgba(61,232,200,.04);line-height:1;pointer-events:none;user-select:none;">02</div>
+        <div class="tag" style="margin-bottom:24px;">Weekdays</div>
+        <h3 style="font-size:26px;font-weight:700;margin-bottom:14px;">Stay Connected</h3>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.75;">
+          Group chats for daily check-ins, challenges, and support. We keep each other accountable and motivated between sessions — consistency is built daily.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RULES — BuzzWorthy style -->
+<section style="padding:110px 0;background:var(--bg-surface);">
+  <div class="wrap">
+    <div class="tag rv" style="margin-bottom:48px;">Who Can Join</div>
+    <div style="border-top:1px solid var(--border);">
+
+      <div class="rules-row rv" style="display:grid;grid-template-columns:140px 1fr 80px;align-items:start;gap:48px;padding:52px 0;border-bottom:1px solid var(--border);">
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.12em;padding-top:6px;">RULE NO.1</div>
+        <div>
+          <h3 style="font-size:clamp(22px,3vw,38px);font-weight:800;margin-bottom:14px;font-family:'Syne',sans-serif;">Anyone.</h3>
+          <p style="font-size:15px;color:var(--text-secondary);line-height:1.75;max-width:580px;">Whether you're a beginner or a beast, if you're ready to move and grow, you belong here. No judgement. No gatekeeping. Just progress.</p>
+        </div>
+        <div class="rules-num" style="font-family:'Syne',sans-serif;font-size:72px;font-weight:800;color:rgba(255,255,255,.03);line-height:1;text-align:right;">01</div>
+      </div>
+
+      <div class="rules-row rv" style="display:grid;grid-template-columns:140px 1fr 80px;align-items:start;gap:48px;padding:52px 0;border-bottom:1px solid var(--border);">
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.12em;padding-top:6px;">RULE NO.2</div>
+        <div>
+          <h3 style="font-size:clamp(22px,3vw,38px);font-weight:800;margin-bottom:14px;font-family:'Syne',sans-serif;color:var(--accent);">Show Up.</h3>
+          <p style="font-size:15px;color:var(--text-secondary);line-height:1.75;max-width:580px;">Consistency is the only requirement. Your best changes every day — we just need you to be present. Discipline is contagious.</p>
+        </div>
+        <div class="rules-num" style="font-family:'Syne',sans-serif;font-size:72px;font-weight:800;color:rgba(255,255,255,.03);line-height:1;text-align:right;">02</div>
+      </div>
+
+      <div class="rules-row rv" style="display:grid;grid-template-columns:140px 1fr 80px;align-items:start;gap:48px;padding:52px 0;">
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.12em;padding-top:6px;">RULE NO.3</div>
+        <div>
+          <h3 style="font-size:clamp(22px,3vw,38px);font-weight:800;margin-bottom:14px;font-family:'Syne',sans-serif;">Rise Together.</h3>
+          <p style="font-size:15px;color:var(--text-secondary);line-height:1.75;max-width:580px;">RevLine is a community, not a competition. We celebrate each other's wins, support each other through challenges, and grow as one unit.</p>
+        </div>
+        <div class="rules-num" style="font-family:'Syne',sans-serif;font-size:72px;font-weight:800;color:rgba(255,255,255,.03);line-height:1;text-align:right;">03</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events" style="padding:110px 0;">
+  <div class="wrap">
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;flex-wrap:wrap;gap:24px;">
+      <div>
+        <div class="tag rv" style="margin-bottom:16px;">Events</div>
+        <h2 class="d-md rv">Upcoming <span class="accent">Sessions</span></h2>
+      </div>
+      <p class="rv" style="color:var(--text-secondary);font-size:14px;max-width:320px;line-height:1.7;">
+        Join us for high-energy training sessions designed to challenge, inspire, and unite our community.
+      </p>
+    </div>
+
+    <div class="stg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:72px;">
+      <div class="card" style="padding:32px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div>
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px;">
+          <div class="tag"><span class="tag-dot"></span>Upcoming</div>
+          <div style="text-align:right;">
+            <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent);line-height:1;">TBA</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Date</div>
+          </div>
+        </div>
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">Weekend Group Session</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">📍 Chennai — Location TBD</p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:20px;">
+          Next group training session — outdoor / turf / trails. Full details dropped 48 hrs before. Stay in the group chat.
+        </p>
+        <div style="font-size:12px;color:var(--text-muted);">Check <strong style="color:var(--accent);">@revline_official</strong> for updates</div>
+      </div>
+
+      <div class="card" style="padding:32px;background:var(--accent-dim);border-color:rgba(61,232,200,.12);display:flex;align-items:center;justify-content:center;min-height:240px;">
+        <div style="text-align:center;">
+          <div style="width:52px;height:52px;border-radius:50%;border:1px dashed rgba(61,232,200,.35);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--accent);margin-bottom:8px;">Events updated live</div>
+          <p style="font-size:13px;color:var(--text-secondary);max-width:220px;">Sessions are posted regularly — follow <strong>@revline_official</strong> on Instagram for announcements.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What to Expect -->
+    <h3 class="rv" style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:20px;letter-spacing:.12em;text-transform:uppercase;">What to Expect</h3>
+    <div class="g2 stg" style="margin-bottom:80px;">
+      <div class="card" style="padding:36px;">
+        <div style="font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:rgba(61,232,200,.07);line-height:1;margin-bottom:16px;">01</div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">What to Bring</h3>
+        <ul style="list-style:none;padding:0;font-size:14px;color:var(--text-secondary);line-height:1.9;">
+          <li>→ Water bottle and towel</li>
+          <li>→ Comfortable workout clothes</li>
+          <li>→ Training shoes</li>
+          <li>→ Personal yoga mat (optional)</li>
+          <li>→ Positive attitude and energy!</li>
+        </ul>
+      </div>
+      <div class="card" style="padding:36px;">
+        <div style="font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:rgba(61,232,200,.07);line-height:1;margin-bottom:16px;">02</div>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Session Benefits</h3>
+        <ul style="list-style:none;padding:0;font-size:14px;color:var(--text-secondary);line-height:1.9;">
+          <li>→ Guided workouts</li>
+          <li>→ Community support &amp; motivation</li>
+          <li>→ Progressive fitness challenges</li>
+          <li>→ Networking with like-minded people</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Completed Events -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:16px;">
+      <h3 class="rv" style="font-size:clamp(20px,3vw,34px);font-weight:700;font-family:'Syne',sans-serif;">Completed <span class="accent">Events</span></h3>
+      <span class="rv" style="font-size:12px;color:var(--text-muted);">Relive our journey</span>
+    </div>
+    <div class="card rv" style="overflow:hidden;padding:0;">
+      <table class="ev-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Session Name</th>
+            <th>Venue</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Jan 2024</td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text-primary);">Weekend Warrior #1</td>
+            <td>Elliot's Beach, Chennai</td>
+            <td><span class="tag" style="font-size:10px;">Done ✓</span></td>
+          </tr>
+          <tr>
+            <td>Feb 2024</td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text-primary);">Turf Session Vol. 2</td>
+            <td>Indoor Turf, Velachery</td>
+            <td><span class="tag" style="font-size:10px;">Done ✓</span></td>
+          </tr>
+          <tr>
+            <td>Mar 2024</td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text-primary);">Trail Blaze Run</td>
+            <td>Madhya Kailash Trails</td>
+            <td><span class="tag" style="font-size:10px;">Done ✓</span></td>
+          </tr>
+          <tr>
+            <td>Apr 2024</td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text-primary);">Park Circuit #4</td>
+            <td>Nageswara Rao Park</td>
+            <td><span class="tag" style="font-size:10px;">Done ✓</span></td>
+          </tr>
+          <tr>
+            <td>Jun 2024</td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text-primary);">Strength Collab</td>
+            <td>Commercial Gym, Adyar</td>
+            <td><span class="tag" style="font-size:10px;">Done ✓</span></td>
+          </tr>
+          <tr>
+            <td colspan="4" style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">
+              More events tracked in the RevLine database — updated after each session
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- CREW -->
+<section id="crew" style="padding:110px 0;background:var(--bg-surface);">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="tag rv" style="margin:0 auto 16px;width:fit-content;">The Crew</div>
+      <h2 class="d-md rv" style="margin-bottom:16px;">
+        Meet the <span class="accent">people</span><br>behind RevLine.
+      </h2>
+      <p class="rv" style="color:var(--text-secondary);font-size:15px;max-width:460px;margin:0 auto;line-height:1.75;">
+        Passionate individuals who make RevLine the strongest fitness community. Together, building something extraordinary.
+      </p>
+    </div>
+    <div class="g5 stg">
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/nikileshh.jpg" alt="Nikileshh S" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Nikileshh S</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/karthik_saravanan.jpg" alt="Karthik Saravanan" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Karthik Saravanan</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/rohith_dharshan.jpg" alt="Rohith Dharshan M" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Rohith Dharshan M</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/naren.jpg" alt="Naren Vaithiyaa G" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Naren Vaithiyaa G</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/madhumitha.jpg" alt="Madhumitha B" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Madhumitha B</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/aakash_bala.jpg" alt="Aakash Bala" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Aakash Bala</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/sanjeev.jpg" alt="Sanjeev MS" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Sanjeev MS</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/logini.jpg" alt="Logini T S" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Logini T S</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/soorya.jpg" alt="Soorya G" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Soorya G</div></div>
+      </div>
+      <div class="crew-card">
+        <img src="https://rev-line-gamma.vercel.app/crew_images/Suresh.jpg" alt="Suresh" loading="lazy">
+        <div class="crew-ov"><div class="crew-name">Suresh</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION QUOTE -->
+<section style="padding:130px 0;">
+  <div class="wrap" style="text-align:center;max-width:960px;margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:100px;line-height:.8;color:rgba(61,232,200,.06);font-weight:800;pointer-events:none;user-select:none;margin-bottom:-28px;">"</div>
+    <p class="d-md rv" style="line-height:1.3;margin-bottom:32px;">
+      To build a strong, purpose-driven community where every individual can <span class="accent">move better, live stronger, and stay consistent</span> — together.
+    </p>
+    <div class="rv" style="font-size:12px;color:var(--text-muted);letter-spacing:.15em;text-transform:uppercase;margin-top:32px;">The RevLine Mission</div>
+  </div>
+</section>
+
+<!-- TERMS & CONDITIONS -->
+<section id="terms" style="padding:110px 0;background:var(--bg-surface);">
+  <div class="wrap">
+    <div style="max-width:800px;margin:0 auto;">
+      <div class="tag rv" style="margin-bottom:16px;">Community Guidelines</div>
+      <h2 class="d-md rv" style="margin-bottom:16px;">Terms &amp; <span class="accent">Conditions</span></h2>
+      <p class="rv" style="color:var(--text-secondary);font-size:15px;line-height:1.75;margin-bottom:48px;">
+        Our community guidelines and legal framework to ensure a safe, supportive environment for all RevLine members. By joining RevLine, you agree to follow these rules and uphold the values of respect, discipline, and positive community energy.
+      </p>
+      <div class="card rv" style="padding:40px 48px;border-radius:24px;">
+        <div class="acc-item">
+          <button class="acc-btn" aria-expanded="false"><span>01 &nbsp; Respect &amp; Inclusivity</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ All members must treat each other with respect, kindness, and inclusivity.</li>
+            <li>→ No discrimination based on age, gender, background, or fitness level.</li>
+            <li>→ Offensive language, harassment, or disrespect will not be tolerated.</li>
+          </ul></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-btn" aria-expanded="false"><span>02 &nbsp; Attendance &amp; Participation</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ Members are encouraged to attend weekend group activities regularly.</li>
+            <li>→ Daily workout check-ins (optional) help with consistency and motivation.</li>
+            <li>→ Inform admins if you're unable to attend any group event.</li>
+          </ul></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-btn" aria-expanded="false"><span>03 &nbsp; Safety &amp; Health</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ Members participate at their own risk. Consult a doctor if you have health concerns.</li>
+            <li>→ Stay hydrated, wear appropriate attire, and follow fitness safety guidelines.</li>
+            <li>→ Report injuries or issues to the organisers immediately.</li>
+          </ul></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-btn" aria-expanded="false"><span>04 &nbsp; Communication &amp; Sharing</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ Use the official WhatsApp group or designated platform for updates only (no spam).</li>
+            <li>→ Positive sharing: motivational posts, progress photos, or wellness tips are welcome!</li>
+            <li>→ Don't promote other clubs, events, or products without admin permission.</li>
+          </ul></div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-btn" aria-expanded="false"><span>05 &nbsp; Discipline &amp; Conduct</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ Be punctual for sessions and respect the schedule.</li>
+            <li>→ Keep locations clean; be mindful of public spaces (parks, gyms, trails).</li>
+            <li>→ Repeated indiscipline may lead to temporary or permanent removal from the group.</li>
+          </ul></div></div>
+        </div>
+        <div class="acc-item" style="border-bottom:none;">
+          <button class="acc-btn" aria-expanded="false"><span>06 &nbsp; Community &amp; Growth</span><span class="acc-icon">+</span></button>
+          <div class="acc-body"><div class="acc-inner"><ul>
+            <li>→ Members can suggest new activities or volunteer as event leaders.</li>
+            <li>→ Referrals are encouraged — bring friends and family who align with our vibe!</li>
+            <li>→ RevLine is a community, not a competition — we rise together.</li>
+          </ul></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / CONTACT -->
+<section id="contact" style="padding:110px 0;">
+  <div class="wrap">
+    <div class="cta-inner" style="position:relative;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#0a1020 0%,#0d1630 50%,#0a1020 100%);border:1px solid rgba(61,232,200,.1);padding:96px 80px;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 65% 55% at 50% 50%,rgba(61,232,200,.06) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(61,232,200,.3),transparent);"></div>
+      <div style="position:relative;z-index:1;text-align:center;max-width:620px;margin:0 auto;">
+        <div class="tag rv" style="margin:0 auto 24px;width:fit-content;">
+          <span class="tag-dot"></span>
+          Open to New Members
+        </div>
+        <h2 class="d-md rv" style="margin-bottom:20px;line-height:1.05;">
+          Ready to join<br><span class="accent">the movement?</span>
+        </h2>
+        <p class="rv" style="color:var(--text-secondary);font-size:16px;line-height:1.75;margin-bottom:44px;">
+          DM us your name, age, contact, and why you want to join. We'll get back to you and add you to the crew.
+        </p>
+        <div class="stg" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:52px;">
+          <a href="https://instagram.com/revline_official" target="_blank" class="btn btn-p" style="font-size:15px;padding:15px 32px;">Let's Rev It Up →</a>
+          <a href="https://instagram.com/revline_official" target="_blank" class="btn btn-o" style="font-size:15px;padding:15px 32px;">Follow on Instagram</a>
+        </div>
+        <div class="stg" style="display:flex;justify-content:center;gap:48px;flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Instagram</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent);">@revline_official</div>
+          </div>
+          <div style="width:1px;background:var(--border);"></div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Location</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text-primary);">Chennai, India</div>
+          </div>
+          <div style="width:1px;background:var(--border);"></div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Sessions</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text-primary);">Every Weekend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--border);padding:40px 0;background:var(--bg-base);">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:.06em;">REV<span style="color:var(--accent);">LINE</span></div>
+    <p style="font-size:13px;color:var(--text-muted);">© 2025 RevLine. Building stronger communities, one workout at a time.</p>
+    <div style="display:flex;gap:20px;">
+      <a href="#about" style="font-size:13px;color:var(--text-secondary);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">About</a>
+      <a href="#events" style="font-size:13px;color:var(--text-secondary);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">Events</a>
+      <a href="#crew" style="font-size:13px;color:var(--text-secondary);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">Crew</a>
+      <a href="#terms" style="font-size:13px;color:var(--text-secondary);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">T&amp;C</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const cur = document.getElementById('cursor');
+const curf = document.getElementById('cursor-f');
+let mx=0,my=0,fx=0,fy=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+(function af(){ fx+=(mx-fx)*.13; fy+=(my-fy)*.13; curf.style.left=fx+'px'; curf.style.top=fy+'px'; requestAnimationFrame(af); })();
+document.querySelectorAll('a,button,.crew-card,.card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('ch'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('ch'));
+});
+
+// REVLINE blur letters
+const rlEl=document.getElementById('rl');
+'REVLINE'.split('').forEach((ch,i)=>{
+  const s=document.createElement('span');
+  s.textContent=ch; s.className='rl-letter';
+  s.style.animationDelay=(i*0.14)+'s';
+  s.style.animationDuration=(3.8+i*0.08)+'s';
+  if(i===3) s.style.color='var(--accent)';
+  rlEl.appendChild(s);
+});
+
+// Nav hide/show on scroll
+let lastY=0;
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  nav.classList.toggle('hide', y>lastY && y>80);
+  lastY=y;
+});
+
+// Scroll reveal
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on'); });
+},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.rv,.rv-l,.rv-r,.stg,.line-reveal').forEach(el=>io.observe(el));
+
+// Counter animation
+const cio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el=e.target;
+    const target=parseInt(el.dataset.target);
+    const suffix=el.dataset.suffix||'';
+    const isYear=target>=2000;
+    let c=isYear?target-4:0;
+    const step=target/(1400/16);
+    const t=setInterval(()=>{
+      c+=step;
+      if(c>=target){c=target;clearInterval(t);}
+      el.textContent=Math.floor(c)+suffix;
+    },16);
+    cio.unobserve(el);
+  });
+},{threshold:0.5});
+document.querySelectorAll('.ctr').forEach(c=>cio.observe(c));
+
+// Accordion
+document.querySelectorAll('.acc-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const open=btn.getAttribute('aria-expanded')==='true';
+    document.querySelectorAll('.acc-btn').forEach(b=>{
+      b.setAttribute('aria-expanded','false');
+      b.nextElementSibling.classList.remove('open');
+    });
+    if(!open){
+      btn.setAttribute('aria-expanded','true');
+      btn.nextElementSibling.classList.add('open');
+    }
+  });
+});
+
+// GSAP parallax
+if(typeof gsap!=='undefined'&&typeof ScrollTrigger!=='undefined'){
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.to('.hero-glow',{
+    scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true},
+    y:-120,ease:'none'
+  });
+  gsap.to('.hero-grid',{
+    scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true},
+    y:-60,ease:'none'
+  });
+  document.querySelectorAll('.crew-card').forEach((card,i)=>{
+    gsap.to(card,{
+      scrollTrigger:{trigger:card,start:'top bottom',end:'bottom top',scrub:true},
+      y:(i%2===0)?-20:20,ease:'none'
+    });
+  });
+}
+</script>
+</body>
+</html>
